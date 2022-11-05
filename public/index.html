@@ -17,5 +17,105 @@
       <h1>Hire a ninja in your area!</h1>
       <div id="ninjas"></div>
     </div>
+
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script
+      src="https://unpkg.com/react@18/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+
+    <!-- Create React Component -->
+    <script type="text/babel">
+      "use strict";
+      class Ninja extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            ninjas: [],
+            no_ninjas: "",
+          };
+          this.handleSubmit = this.handleSubmit.bind(this);
+        }
+
+        render() {
+          var ninjas = this.state.ninjas;
+          ninjas = ninjas.map((ninja, index) => {
+            return (
+              <li key={index}>
+                <span className={ninja.available.toString()}></span>
+                <span className="name">{ninja.name}</span>
+                <span className="rank">{ninja.rank}</span>
+                {ninja.distance ? (
+                  <span className="dist">
+                    {Math.floor(ninja.distance / 1000)} km
+                  </span>
+                ) : (
+                  ""
+                )}
+              </li>
+            );
+          });
+          return (
+            <div id="ninja-container">
+              <form id="search" onSubmit={this.handleSubmit}>
+                <label>Enter your Longitude:</label>
+                <input
+                  type="text"
+                  name="lng"
+                  placeholder="longitude"
+                  required
+                />
+                <label>Enter your Latitude:</label>
+                <input type="text" name="lat" placeholder="latitude" required />
+
+                <label>Enter the Maximum Distance (km):</label>
+                <input
+                  type="text"
+                  name="maxDist"
+                  placeholder="max distance"
+                  required
+                />
+
+                <input type="submit" value="Find Ninjas" />
+              </form>
+              <ul>
+                {ninjas}
+                {this.state.no_ninjas}
+              </ul>
+            </div>
+          );
+        }
+
+        handleSubmit(e) {
+          e.preventDefault();
+          var lng = document.querySelector("[name=lng]").value;
+          var lat = document.querySelector("[name=lat]").value;
+          var maxDist = document.querySelector("[name=maxDist]").value;
+
+          fetch(`/api/ninjas?lng=${lng}&lat=${lat}&maxDist=${maxDist}`)
+            .then((data) => {
+              return data.json();
+            })
+            .then((json) => {
+              json.length == 0
+                ? this.setState({
+                    no_ninjas: <li><center>Sorry! No Ninjas in that distance.</center></li>,
+                    ninjas: [],
+                  })
+                : this.setState({
+                    no_ninjas: "",
+                    ninjas: json,
+                  });
+            });
+        }
+      }
+      const domContainer = document.querySelector("#ninjas");
+      const root = ReactDOM.createRoot(domContainer);
+      root.render(<Ninja />);
+    </script>
   </body>
 </html>
