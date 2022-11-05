@@ -5,9 +5,12 @@ const router = express.Router();
 const Ninja = require("../models/ninja");
 
 router.get("/", (req, res, next) => {
+  // handle the maximum distance
+  var maxDist = Number.isInteger(parseInt(req.query.maxDist)) ? parseInt(req.query.maxDist) : 100;
+
   // check if longitude and latitude are provided
   req.query.lng != undefined && req.query.lat != undefined
-    ? // Aggregate the ninjas 10000 m  closest to the point in the query
+    ? // Aggregate the ninjas closest to the point in the query
       Ninja.aggregate([
         {
           $geoNear: {
@@ -19,7 +22,7 @@ router.get("/", (req, res, next) => {
               ],
             },
             distanceField: "distance",
-            maxDistance: 10000,
+            maxDistance: maxDist * 1000,
             spherical: true,
           },
         },
